@@ -1,0 +1,537 @@
+`jsx
+import React, { useState } from 'react';
+import { Printer, Package, Users, Phone, Mail, MapPin, ChevronRight, Star, Shield, Truck, BookOpen, Gift, Newspaper, Calendar, Tag, Box, Layers, FileText, Upload, X, Check, Palette, Handshake } from 'lucide-react';
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [orderForm, setOrderForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    product: '',
+    quantity: '',
+    comments: '',
+    file: null
+  });
+  const [orderStatus, setOrderStatus] = useState(null); // null, 'sending', 'success', 'error'
+
+  // Product categories and items
+  const categories = [
+    { id: 'all', name: 'Все товары', icon: Layers },
+    { id: 'books', name: 'Книги и брошюры', icon: BookOpen },
+    { id: 'packaging', name: 'Упаковка', icon: Package },
+    { id: 'business', name: 'Деловая полиграфия', icon: FileText },
+    { id: 'advertising', name: 'Рекламная продукция', icon: Users }
+  ];
+
+  const products = [
+    {
+      id: 1,
+      name: "Твердый переплет",
+      category: "books",
+      price: "от 500₽",
+      image: "https://placehold.co/400x500/1e40af/ffffff?text=Книга+в+тв.+переплете",
+      description: "Профессиональное издание книг в твердом переплете с качественной печатью"
+    },
+    {
+      id: 2,
+      name: "Брошюры",
+      category: "books",
+      price: "от 80₽",
+      image: "https://placehold.co/400x500/059669/ffffff?text=Брошюры",
+      description: "Изготовление брошюр различного формата и количества страниц"
+    },
+    {
+      id: 3,
+      name: "Коробки",
+      category: "packaging",
+      price: "от 120₽",
+      image: "https://placehold.co/400x500/7c3aed/ffffff?text=Подарочные+коробки",
+      description: "Подарочные коробки из качественного картона с логотипом"
+    },
+    {
+      id: 4,
+      name: "Пакеты",
+      category: "packaging",
+      price: "от 15₽",
+      image: "https://placehold.co/400x500/dc2626/ffffff?text=Полиграфические+пакеты",
+      description: "Пластиковые и бумажные пакеты с нанесением логотипа"
+    },
+    {
+      id: 5,
+      name: "Визитки",
+      category: "business",
+      price: "от 300₽",
+      image: "https://placehold.co/400x500/ea580c/ffffff?text=Визитки",
+      description: "Визитки на качественной бумаге с различными эффектами"
+    },
+    {
+      id: 6,
+      name: "Блокноты",
+      category: "business",
+      price: "от 200₽",
+      image: "https://placehold.co/400x500/0891b2/ffffff?text=Блокноты",
+      description: "Корпоративные блокноты с логотипом компании"
+    },
+    {
+      id: 7,
+      name: "Баннеры",
+      category: "advertising",
+      price: "от 800₽",
+      image: "https://placehold.co/400x500/7c2d12/ffffff?text=Баннеры",
+      description: "Внутренние и наружные баннеры различного формата"
+    },
+    {
+      id: 8,
+      name: "Листовки",
+      category: "advertising",
+      price: "от 500₽",
+      image: "https://placehold.co/400x500/166534/ffffff?text=Листовки",
+      description: "Рекламные листовки на мелованной бумаге"
+    },
+    {
+      id: 9,
+      name: "Календари",
+      category: "business",
+      price: "от 150₽",
+      image: "https://placehold.co/400x500/9333ea/ffffff?text=Календари",
+      description: "Настенные и настольные календари для бизнеса"
+    },
+    {
+      id: 10,
+      name: "Этикетки",
+      category: "packaging",
+      price: "от 100₽",
+      image: "https://placehold.co/400x500/be185d/ffffff?text=Этикетки",
+      description: "Самоклеящиеся этикетки на различные поверхности"
+    },
+    {
+      id: 11,
+      name: "Каталоги",
+      category: "books",
+      price: "от 1000₽",
+      image: "https://placehold.co/400x500/0284c7/ffffff?text=Каталоги",
+description: "Корпоративные каталоги и буклеты"
+    },
+    {
+      id: 12,
+      name: "Плакаты",
+      category: "advertising",
+      price: "от 600₽",
+      image: "https://placehold.co/400x500/dc2626/ffffff?text=Плакаты",
+      description: "Информационные и рекламные плакаты"
+    },
+    {
+      id: 13,
+      name: "Векселя и рукоятки",
+      category: "business",
+      price: "от 250₽",
+      image: "https://placehold.co/400x500/166534/ffffff?text=Векселя+и+рукоятки",
+      description: "Официальные документы с юридической силой, оформленные в соответствии с требованиями законодательства"
+    }
+  ];
+
+  const services = [
+    {
+      icon: <Printer className="w-12 h-12 text-blue-600" />,
+      title: "Полиграфия",
+      description: "Книги, брошюры, журналы, каталоги и другая полиграфическая продукция высочайшего качества.",
+      image: "https://placehold.co/600x400/1e40af/ffffff?text=Полиграфия"
+    },
+    {
+      icon: <Package className="w-12 h-12 text-green-600" />,
+      title: "Упаковка",
+      description: "Коробки, пакеты, этикетки и фирменная упаковка для вашего бизнеса.",
+      image: "https://placehold.co/600x400/059669/ffffff?text=Упаковка"
+    },
+    {
+      icon: <Users className="w-12 h-12 text-purple-600" />,
+      title: "Рекламная продукция",
+      description: "Визитки, буклеты, плакаты, баннеры и другая рекламная продукция.",
+      image: "https://placehold.co/600x400/7c3aed/ffffff?text=Реклама"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Нина скотина",
+      company: "Компания помойки за углом",
+      rating: 5,
+      text: "Отличное качество пиздюлей по ебалу"
+    },
+    {
+      name: "Цыганский Облезлый Пес",
+      company: "Типо дизайнер но по сути лох",
+      rating: 5,
+      text: "гав-гав ,Аф-фаф"
+    },
+    {
+      name: "Бабка курьер",
+      company: "Прокат велосипедов",
+      rating: 4,
+      text: "доехала до них без седла"
+    }
+  ];
+
+  const NavItem = ({ id, label, onClick }) => (
+    <button
+      onClick={() => {
+        onClick();
+        setIsMenuOpen(false);
+      }}
+      className={px-4 py-2 rounded-lg transition-all duration-300 ${
+        activeTab === id
+          ? 'bg-blue-600 text-white shadow-lg'
+          : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Проверяем тип файла
+      const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/postscript', 'image/tiff'];
+      if (allowedTypes.includes(file.type)) {
+        setOrderForm({ ...orderForm, file: file });
+      } else {
+        alert('Пожалуйста, загрузите файл в формате JPG, PNG, PDF, EPS или TIFF');
+      }
+    }
+  };
+
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+    setOrderStatus('sending');
+    
+    // В реальном приложении здесь будет отправка на сервер
+    // Для демонстрации имитируем отправку
+    setTimeout(() => {
+      setOrderStatus('success');
+      // Сбрасываем форму
+      setOrderForm({
+        name: '',
+        email: '',
+        phone: '',
+        product: orderForm.product,
+        quantity: '',
+        comments: '',
+        file: null
+      });
+    }, 2000);
+  };
+
+  const openOrderModal = (product) => {
+    setSelectedProduct(product);
+    setOrderForm({
+      ...orderForm,
+      product: product.name
+    });
+    setOrderStatus(null);
+  };
+
+  const closeOrderModal = () => {
+    setSelectedProduct(null);
+    setOrderStatus(null);
+  };
+
+  const TabContent = () => {
+    switch (activeTab) {
+      case 'services':
+        return (
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">Наши услуги</h2>
+<div className="grid md:grid-cols-3 gap-8 mb-16">
+                {services.map((service, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <img src={service.image} alt={service.title} className="w-full h-64 object-cover" />
+                    <div className="p-6">
+                      <div className="flex items-center mb-4">
+                        {service.icon}
+                        <h3 className="text-xl font-bold ml-3 text-gray-800">{service.title}</h3>
+                      </div>
+                      <p className="text-gray-600">{service.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Products Gallery */}
+              <div className="mt-8">
+                <h2 className="text-4xl font-bold text-center mb-8 text-gray-800">Наша продукция</h2>
+                
+                {/* Category Filter */}
+                <div className="flex flex-wrap justify-center gap-4 mb-8">
+                  {categories.map((category) => {
+                    const IconComponent = category.icon;
+                    return (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={flex items-center px-4 py-2 rounded-full border transition-all duration-300 ${
+                          selectedCategory === category.id
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-600 hover:text-blue-600'
+                        }}
+                      >
+                        <IconComponent className="w-4 h-4 mr-2" />
+                        {category.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Products Grid */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                      <div className="relative">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-80 object-cover"
+                        />
+                        <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-2 py-1 rounded-full text-sm font-semibold text-gray-800">
+                          {product.price}
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-lg mb-2 text-gray-800">{product.name}</h3>
+                        <p className="text-gray-600 text-sm mb-4">{product.description}</p>
+                        <button 
+                          onClick={() => openOrderModal(product)}
+                          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+                        >
+                          Заказать
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      
+      case 'about':
+        return (
+          <section className="py-16 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+<div>
+                  <h2 className="text-4xl font-bold mb-6 text-gray-800">О нашей типографии</h2>
+                  <p className="text-lg text-gray-600 mb-6">
+                    Мы работаем на рынке полиграфических услуг более 15 лет, сочетая традиционные методы печати 
+                    с современными технологиями для достижения наилучшего результата.
+                  </p>
+                  <p className="text-lg text-gray-600 mb-8">
+                    Наша типография оснащена современным оборудованием от ведущих мировых производителей, 
+                    что позволяет нам выполнять заказы любой сложности в кратчайшие сроки.
+                  </p>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="flex items-center">
+                      <Shield className="w-6 h-6 text-blue-600 mr-3" />
+                      <span className="font-semibold">Гарантия качества</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Truck className="w-6 h-6 text-blue-600 mr-3" />
+                      <span className="font-semibold">Бесплатная доставка</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Star className="w-6 h-6 text-blue-600 mr-3" />
+                      <span className="font-semibold">15+ лет опыта</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Printer className="w-6 h-6 text-blue-600 mr-3" />
+                      <span className="font-semibold">Современное оборудование</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative">
+                  <img 
+                    src="https://placehold.co/800x500/1e40af/ffffff?text=Наша+типография" 
+                    alt="Типография" 
+                    className="rounded-xl shadow-2xl"
+                  />
+                  <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-lg shadow-lg">
+                    <div className="text-3xl font-bold text-blue-600">200+</div>
+                    <div className="text-gray-600">Довольных клиентов</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      
+      case 'contact':
+        return (
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">Свяжитесь с нами</h2>
+              <div className="grid lg:grid-cols-2 gap-12">
+                <div>
+                  <div className="space-y-6">
+                    <div className="flex items-center">
+                      <MapPin className="w-6 h-6 text-blue-600 mr-4" />
+                      <div>
+                        <h3 className="font-semibold text-lg">Адрес</h3>
+                        <p className="text-gray-600">г. Москва, ул. Печатная, д. 15, оф. 305</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="w-6 h-6 text-blue-600 mr-4" />
+                      <div>
+                        <h3 className="font-semibold text-lg">Телефон</h3>
+                        <p className="text-gray-600">+7 (495) 123-45-67</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="w-6 h-6 text-blue-600 mr-4" />
+                      <div>
+                        <h3 className="font-semibold text-lg">Email</h3>
+                        <p className="text-gray-600">info@pigmentum.ru</p>
+                      </div>
+</div>
+                    <div className="bg-blue-50 p-6 rounded-xl">
+                      <h3 className="font-semibold text-lg mb-3">Режим работы</h3>
+                      <p className="text-gray-600">Пн-Пт: 9:00 - 18:00</p>
+                      <p className="text-gray-600">Сб: 10:00 - 15:00</p>
+                      <p className="text-gray-600">Вс: выходной</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-8 rounded-xl shadow-lg">
+                  <form className="space-y-6">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">Ваше имя</label>
+                      <input 
+                        type="text" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Введите ваше имя"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">Email</label>
+                      <input 
+                        type="email" 
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Введите ваш email"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2">Сообщение</label>
+                      <textarea 
+                        rows="4"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Опишите ваш заказ или вопрос"
+                      ></textarea>
+                    </div>
+                    <button 
+                      type="submit"
+                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+                    >
+                      Отправить сообщение
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      
+      case 'home':
+      default:
+        return (
+          <div>
+            {/* Hero Section */}
+            <section className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-blue-600 text-white">
+              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+              <div className="relative max-w-7xl mx-auto px-4 py-24">
+                <div className="text-center">
+                  <div className="inline-flex items-center mb-4">
+                    <div className="w-12 h-12 bg-orange-400 rounded-full flex items-center justify-center mr-3">
+                      <Palette className="w-6 h-6 text-white" />
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">PIGMENTUM</h1>
+                  </div>
+                  <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
+                    Профессиональная типография, где цвет и качество становятся искусством
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button 
+                      onClick={() => setActiveTab('services')}
+                      className="bg-white text-blue-800 px-8 py-4 rounded-lg font-bold text-lg hover:bg-blue-50 transition-colors duration-300"
+                    >
+                      Посмотреть товары
+                    </button>
+                    <button
+onClick={() => setActiveTab('contact')}
+                      className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-800 transition-colors duration-300"
+                    >
+                      Связаться с нами
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Welcome Section */}
+            <section className="py-16 bg-gradient-to-br from-orange-50 to-blue-50">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                  <div className="flex items-start mb-6">
+                    <Handshake className="w-12 h-12 text-orange-500 mr-4" />
+                    <div>
+                      <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Добро пожаловать в PIGMENTUM!</h2>
+                      <div className="w-24 h-1 bg-orange-500 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="prose prose-lg max-w-none text-gray-700">
+                    <p className="mb-4 text-lg">
+                      Уважаемые клиенты! Мы рады приветствовать вас в нашей типографии <strong className="text-orange-600">PIGMENTUM</strong> — месте, где ваши идеи превращаются в реальность через искусство печати.
+                    </p>
+                    <p className="mb-4 text-lg">
+                      С 2010 года мы создаем полиграфическую продукцию, которая не только выполняет свою функцию, но и вызывает эмоции. Наши специалисты — это команда профессионалов, которые относятся к каждому заказу как к произведению искусства.
+                    </p>
+                    <p className="text-lg">
+                      <strong>Почему выбирают нас?</strong>
+                    </p>
+                    <ul className="list-disc list-inside space-y-2 text-lg">
+                      <li>Индивидуальный подход к каждому клиенту</li>
+                      <li>Современное оборудование последнего поколения</li>
+                      <li>Широкий спектр услуг — от визиток до сложных упаковочных решений</li>
+                      <li>Конкурентные цены и оперативное выполнение заказов</li>
+                      <li>Гарантия качества на всю продукцию</li>
+                    </ul>
+                    <p className="mt-6 text-lg font-semibold text-blue-700">
+                      Мы ценим ваше доверие и стремимся сделать сотрудничество максимально комфортным и продуктивным!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Products Showcase */}
+            <section className="py-16 bg-white">
+              <div className="max-w-7xl mx-auto px-4">
+                <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">Популярные товары</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {products.slice(0, 8).map((product) => (
+                    <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-64 object-cover"
+                      />
+                      <div className="p-4">
+                        <h3 className="font-bold text-lg mb-1 text-gray-800">{product.name}</h3>
+                        <p className="text-blue-600 font-semibold">{product.price}</p>
+                        <button 
+                          onClick={() => openOrderModal(product)}
+                          className="w-full mt-2 bg-blue-100 text-blue-700 py-2 px-4 rounded-lg font-semibold hover:bg-blue-200 transition-colors duration-300 text-sm"
